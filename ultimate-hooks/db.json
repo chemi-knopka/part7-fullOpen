@@ -7,6 +7,10 @@
     {
       "content": "paras feature ikinä <3",
       "id": 2
+    },
+    {
+      "content": "notes are pretty",
+      "id": 3
     }
   ],
   "persons": [
@@ -14,6 +18,16 @@
       "name": "mluukkai",
       "number": "040-5483923",
       "id": 1
+    },
+    {
+      "name": "shota",
+      "number": "123123",
+      "id": 2
+    },
+    {
+      "name": "levana ",
+      "number": "59893939",
+      "id": 3
     }
   ]
 }

@@ -9,10 +9,9 @@ import { useSelector, useDispatch } from 'react-redux'
 
 const App = () => {
   const dispatch = useDispatch()
-  const blogsR = useSelector(state => state)
+  const blogs = useSelector(state => state.blogs)
+  const user = useSelector(state => state.users)
 
-  const [blogs, setBlogs] = useState([])
-  const [user, setUser] = useState(null)
   const [notification, setNotification] = useState('')
   const [notify, setNotify] = useState(false)
 
@@ -24,29 +23,23 @@ const App = () => {
       .getAll()
       .then(blogs => {
         const sortedBlogs = blogs.sort((a, b) => (a.likes < b.likes) ? 1 : -1 )
-        setBlogs(sortedBlogs)
         dispatch({ type: 'INIT_BLOGS', data: sortedBlogs})
       }
       )
   }, [])
 
-  console.log(blogsR)
 
   // on the first load get username from localStorage
   useEffect(() => {
     const blogAppUser = window.localStorage.getItem('blogAppUser')
     if (blogAppUser) {
       const user = JSON.parse(blogAppUser)
-      setUser(user)
+      dispatch({ type: 'USER_INIT', data: user})
       blogService.setToken(user.token)
     }
   }, [])
 
-  // sort blogs when blogs are changed (when liked)
-  useEffect(() => {
-    const sortedBlogs = blogs.sort((a, b) => (a.likes < b.likes) ? 1 : -1 )
-    setBlogs(sortedBlogs)
-  }, [blogs])
+  console.log(user)
 
   /* --axios services */
 
@@ -60,6 +53,7 @@ const App = () => {
         // this will set auth. headers to post request
         blogService.setToken(user.token)
         setUser(user)
+        dispatch({ type: 'USER_INIT', data: user})
       })
       .catch(() => {
         // notify if login failed
@@ -78,7 +72,7 @@ const App = () => {
       .create(blogObject)
       .then(postedBlog => {
         // add new blog to the canvas
-        setBlogs(blogs.concat(postedBlog))
+        dispatch({ type: 'ADD_BLOG', data: postedBlog })
         // make notification
         setNotification('New blog is added')
         setNotify(true)
@@ -92,16 +86,19 @@ const App = () => {
       })
   }
 
+ 
   // blog update
   const handleBlogUpdate = (id, blogObject) => {
     blogService
       .update(id, blogObject)
       .then(updatedBlog => {
-        setBlogs(blogs.map(blog => (
-          blog.id ===  id
+        const withRemoved = blogs.map(blog => (
+          blog.id === id
             ? updatedBlog
             : blog
-        )))
+        ))
+        console.log('updating', withRemoved)
+        dispatch({ type: 'INIT_BLOGS', data: withRemoved})
       })
       .catch((error) => console.log(error.message))
   }
@@ -110,17 +107,19 @@ const App = () => {
     blogService
       .deleteOne(id)
       .then(() => {
-        setBlogs(blogs.filter(blog => blog.id !== id))
+        const filteredBlogs = blogs.filter(blog => blog.id !== id)
+        dispatch({ type: 'INIT_BLOGS', data: filteredBlogs})
       })
       .catch((error) => console.log(error))
   }
 
   /** handlers and forms*/
 
-  // removes user token from localStorage
+  // removes user token from localStoragesetUser
   const handleLogout = () => {
     window.localStorage.removeItem('blogAppUser')
     setUser(null)
+    dispatch({ type: 'USER_INIT', data: null})
   }
 
   // returns login form component
@@ -154,17 +153,19 @@ const App = () => {
         </div>
 
         <h2>Blogs</h2>
-        {blogForm()}
+        { blogForm() }
 
         {/* blog list */}
         {
-          blogs.map(blog =>
-            <Blog
-              key={blog.id}
-              blog={blog}
-              handleBlogUpdate={handleBlogUpdate}
-              handleBlogRemove={handleBlogRemove}
-            />
+          blogs
+            .sort((a, b) => (a.likes < b.likes) ? 1 : -1 )  
+            .map(blog =>
+              <Blog
+                key={blog.id}
+                blog={blog}
+                handleBlogUpdate={handleBlogUpdate}
+                handleBlogRemove={handleBlogRemove}
+              />
           )
         }
       </div>

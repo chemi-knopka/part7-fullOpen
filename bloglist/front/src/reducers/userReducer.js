@@ -1,13 +1,10 @@
 const reducer = (state = [], action) => {
     switch(action.type) {
-        case 'INIT_BLOGS':
+        case 'USER_INIT':
             return action.data
-        case 'ADD_BLOG':
-            return state.concat(action.data)
         default:
             return state
     }
 }
-
 
 export default reducer

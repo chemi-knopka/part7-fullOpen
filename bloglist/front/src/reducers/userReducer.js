@@ -7,4 +7,11 @@ const reducer = (state = [], action) => {
     }
 }
 
+export const userInit = (user) => {
+    return {
+        type: 'USER_INIT',
+        data: user
+    }
+}
+
 export default reducer

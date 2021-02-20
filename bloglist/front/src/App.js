@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Blog from './components/Blog'
@@ -6,14 +6,15 @@ import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
 import { useSelector, useDispatch } from 'react-redux'
+import { initializeBlogs } from './reducers/blogReducer'
+import { userInit } from './reducers/userReducer'
+import { displayNotification } from './reducers/notificationReducer'
 
-const App = () => {
+const App = (props) => {
   const dispatch = useDispatch()
   const blogs = useSelector(state => state.blogs)
   const user = useSelector(state => state.users)
-
-  const [notification, setNotification] = useState('')
-  const [notify, setNotify] = useState(false)
+  const notificationR = useSelector(state => state.notification)
 
   const blogFormRef = useRef()
 
@@ -23,10 +24,10 @@ const App = () => {
       .getAll()
       .then(blogs => {
         const sortedBlogs = blogs.sort((a, b) => (a.likes < b.likes) ? 1 : -1 )
-        dispatch({ type: 'INIT_BLOGS', data: sortedBlogs})
+        dispatch(initializeBlogs(sortedBlogs))
       }
       )
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 
   // on the first load get username from localStorage
@@ -34,15 +35,14 @@ const App = () => {
     const blogAppUser = window.localStorage.getItem('blogAppUser')
     if (blogAppUser) {
       const user = JSON.parse(blogAppUser)
-      dispatch({ type: 'USER_INIT', data: user})
+      dispatch(userInit(user))
       blogService.setToken(user.token)
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  console.log(user)
-
+  
   /* --axios services */
-
+  
   // user login
   const handleLogin = (userObject) => {
     loginService
@@ -52,16 +52,11 @@ const App = () => {
         window.localStorage.setItem('blogAppUser', JSON.stringify(user))
         // this will set auth. headers to post request
         blogService.setToken(user.token)
-        setUser(user)
-        dispatch({ type: 'USER_INIT', data: user})
+        dispatch(userInit(user))
       })
       .catch(() => {
         // notify if login failed
-        setNotification('wrong password or username')
-        setNotify(true)
-        setTimeout(() => {
-          setNotify(false)
-        }, 4000)
+        dispatch(displayNotification('wrong password or username', 3000))
       })
   }
 
@@ -74,12 +69,7 @@ const App = () => {
         // add new blog to the canvas
         dispatch({ type: 'ADD_BLOG', data: postedBlog })
         // make notification
-        setNotification('New blog is added')
-        setNotify(true)
-        setTimeout(() => {
-          setNotify(false)
-        }, 4000)
-
+        dispatch(displayNotification('New blog is added', 3000))
       })
       .catch(() => {
         console.log('failed to add a blog')
@@ -92,13 +82,12 @@ const App = () => {
     blogService
       .update(id, blogObject)
       .then(updatedBlog => {
-        const withRemoved = blogs.map(blog => (
+        const updatedBlogs = blogs.map(blog => (
           blog.id === id
             ? updatedBlog
             : blog
         ))
-        console.log('updating', withRemoved)
-        dispatch({ type: 'INIT_BLOGS', data: withRemoved})
+        dispatch(initializeBlogs(updatedBlogs))
       })
       .catch((error) => console.log(error.message))
   }
@@ -107,8 +96,8 @@ const App = () => {
     blogService
       .deleteOne(id)
       .then(() => {
-        const filteredBlogs = blogs.filter(blog => blog.id !== id)
-        dispatch({ type: 'INIT_BLOGS', data: filteredBlogs})
+        const blogsWithOneRemoved = blogs.filter(blog => blog.id !== id)
+        dispatch(initializeBlogs(blogsWithOneRemoved))
       })
       .catch((error) => console.log(error))
   }
@@ -118,8 +107,7 @@ const App = () => {
   // removes user token from localStoragesetUser
   const handleLogout = () => {
     window.localStorage.removeItem('blogAppUser')
-    setUser(null)
-    dispatch({ type: 'USER_INIT', data: null})
+    dispatch(userInit(null))
   }
 
   // returns login form component
@@ -176,7 +164,7 @@ const App = () => {
   return (
     <>
       {
-        notify && <div className='notification'>{notification}</div>
+        notificationR && <div className='notification'>{notificationR}</div>
       }
       {
         user === null

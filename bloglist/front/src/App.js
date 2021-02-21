@@ -1,32 +1,52 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import userService from './services/users'
+
+import Header from './components/Header'
 import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
+import Users from './components/Users'
+
 import { useSelector, useDispatch } from 'react-redux'
 import { initializeBlogs } from './reducers/blogReducer'
 import { userInit } from './reducers/userReducer'
 import { displayNotification } from './reducers/notificationReducer'
 
-const App = (props) => {
+import {
+  BrowserRouter as Router,
+  Switch, Route, Link
+} from 'react-router-dom'
+
+const App = () => {
   const dispatch = useDispatch()
   const blogs = useSelector(state => state.blogs)
   const user = useSelector(state => state.users)
-  const notificationR = useSelector(state => state.notification)
+  const notification = useSelector(state => state.notification)
 
   const blogFormRef = useRef()
 
-  // on the first load get all blogs
+  const [users, setUsers] = useState([])
+
+  // on the first load get all blogs and get all users
   useEffect(() => {
+    // get blogs
     blogService
       .getAll()
       .then(blogs => {
-        const sortedBlogs = blogs.sort((a, b) => (a.likes < b.likes) ? 1 : -1 )
-        dispatch(initializeBlogs(sortedBlogs))
-      }
+          const sortedBlogs = blogs.sort((a, b) => (a.likes < b.likes) ? 1 : -1 )
+          dispatch(initializeBlogs(sortedBlogs))
+        }
       )
+    
+    // get users
+    userService
+      .getAll()
+      .then((users) => {
+          setUsers(users)
+      })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 
@@ -162,16 +182,28 @@ const App = (props) => {
 
   // main
   return (
-    <>
-      {
-        notificationR && <div className='notification'>{notificationR}</div>
-      }
-      {
-        user === null
-          ? loginForm()
-          : blogContent()
-      }
-    </>
+    <Router>
+         <div>
+            {
+                notification && <div className='notification'>{notification}</div>
+            }
+            <div>
+                <Link to='/users'>Users</Link>
+           </div>
+        </div>
+      <Switch>
+        <Route path='/users'>
+          <Users users={users} />
+        </Route>
+        <Route path='/'>
+          {
+            user === null
+              ? loginForm()
+              : blogContent()
+          }
+        </Route>
+      </Switch>
+    </Router>
   )
 }
 

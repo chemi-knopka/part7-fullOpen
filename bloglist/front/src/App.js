@@ -3,7 +3,6 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import userService from './services/users'
 
-import Header from './components/Header'
 import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
@@ -154,12 +153,7 @@ const App = () => {
   const blogContent = () => {
     return (
       <div>
-        {/* logout content */}
-        <div>
-          {user.username} is logged-in
-          <button onClick={handleLogout}>Log out</button>
-        </div>
-
+        
         <h2>Blogs</h2>
         { blogForm() }
 
@@ -180,17 +174,31 @@ const App = () => {
     )
   }
 
+  const header = () => {
+    return (
+      <div>
+        {
+            notification && <div className='notification'>{notification}</div>
+        }
+        <div>
+            <Link to='/users'>Users</Link>
+        </div>
+        {/* logout content */ }
+        {
+          user 
+            &&
+          <div>
+            {user.username} is logged-in
+            <button onClick={handleLogout}>Log out</button>
+          </div>
+}
+      </div>
+    )
+  }
   // main
   return (
     <Router>
-         <div>
-            {
-                notification && <div className='notification'>{notification}</div>
-            }
-            <div>
-                <Link to='/users'>Users</Link>
-           </div>
-        </div>
+        { header()}
       <Switch>
         <Route path='/users'>
           <Users users={users} />

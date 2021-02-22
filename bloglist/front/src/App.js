@@ -22,7 +22,7 @@ import {
 const App = () => {
   const dispatch = useDispatch()
   const blogs = useSelector(state => state.blogs)
-  const user = useSelector(state => state.users)
+  const user = useSelector(state => state.user)
   const notification = useSelector(state => state.notification)
 
   const blogFormRef = useRef()
@@ -130,7 +130,7 @@ const App = () => {
   }
 
   // returns login form component
-  const loginForm = () => {
+  const LoginForm = () => {
     return (
       <LoginForm
         handleLogin={handleLogin}
@@ -153,7 +153,10 @@ const App = () => {
   const blogContent = () => {
     return (
       <div>
-        
+        <div>
+          {user.username} is logged-in
+          <button onClick={handleLogout}>Log out</button>
+        </div>
         <h2>Blogs</h2>
         { blogForm() }
 
@@ -174,7 +177,8 @@ const App = () => {
     )
   }
 
-  const header = () => {
+  const Header = () => {
+    console.log(user)
     return (
       <div>
         {
@@ -183,34 +187,44 @@ const App = () => {
         <div>
             <Link to='/users'>Users</Link>
         </div>
-        {/* logout content */ }
-        {
-          user 
-            &&
-          <div>
-            {user.username} is logged-in
-            <button onClick={handleLogout}>Log out</button>
-          </div>
-}
+      </div>
+    )
+  }
+
+  const User = () => {
+    return (
+      <div>
+        single user
       </div>
     )
   }
   // main
   return (
     <Router>
-        { header()}
-      <Switch>
-        <Route path='/users'>
-          <Users users={users} />
-        </Route>
-        <Route path='/'>
-          {
-            user === null
-              ? loginForm()
-              : blogContent()
-          }
-        </Route>
-      </Switch>
+        {/* logout content */ }
+        {
+            user !== null
+              ? (<div>
+                  { Header() }
+                  <Switch>
+                    <Route path='/users/:id'>
+                      <User />
+                    </Route>
+                    <Route path='/users'>
+                      <Users users={users} />
+                    </Route>
+                    <Route path='/'>
+                      {
+                        user === null
+                          ? LoginForm()
+                          : blogContent()
+                      }
+                    </Route>
+                  </Switch>
+                </div>)
+              : LoginForm()
+        }
+        
     </Router>
   )
 }

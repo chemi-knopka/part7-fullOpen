@@ -16,7 +16,7 @@ import { displayNotification } from './reducers/notificationReducer'
 
 import {
   BrowserRouter as Router,
-  Switch, Route, Link
+  Switch, Route, Link, useParams
 } from 'react-router-dom'
 
 const App = () => {
@@ -130,7 +130,7 @@ const App = () => {
   }
 
   // returns login form component
-  const LoginForm = () => {
+  const displayLoginForm = () => {
     return (
       <LoginForm
         handleLogin={handleLogin}
@@ -153,10 +153,6 @@ const App = () => {
   const blogContent = () => {
     return (
       <div>
-        <div>
-          {user.username} is logged-in
-          <button onClick={handleLogout}>Log out</button>
-        </div>
         <h2>Blogs</h2>
         { blogForm() }
 
@@ -178,26 +174,51 @@ const App = () => {
   }
 
   const Header = () => {
-    console.log(user)
+    const style={padding: 5}
+
     return (
       <div>
+        <div>
+          {user.username} is logged-in
+          <button onClick={handleLogout}>Log out</button>
+        </div>
         {
             notification && <div className='notification'>{notification}</div>
         }
         <div>
-            <Link to='/users'>Users</Link>
+            <Link style={style} to='/'>Home</Link>
+            <Link style={style} to='/users'>Users</Link>
         </div>
       </div>
     )
   }
 
   const User = () => {
+    const id = useParams().id
+    const userToDisplay = users.find(user => {
+      console.log(user.id === id)
+      return user.id === id
+    })
+
+    console.log(userToDisplay )
+    if (!userToDisplay) {
+      console.log('returend')
+      return null 
+    }
     return (
       <div>
-        single user
+        <h2>{userToDisplay.username}</h2>
+        <h3>added blogs</h3>
+        <ul>
+          {userToDisplay.blogs.map((blog,i) => 
+            <li key={i}>{blog.title}</li>  
+          )}
+        </ul>
       </div>
     )
   }
+
+
   // main
   return (
     <Router>
@@ -216,13 +237,13 @@ const App = () => {
                     <Route path='/'>
                       {
                         user === null
-                          ? LoginForm()
+                          ? displayLoginForm()
                           : blogContent()
                       }
                     </Route>
                   </Switch>
                 </div>)
-              : LoginForm()
+              : displayLoginForm()
         }
         
     </Router>

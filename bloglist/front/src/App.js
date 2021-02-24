@@ -3,11 +3,11 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import userService from './services/users'
 
-import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
 import Users from './components/Users'
+import BlogContent from './components/BlogContent'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { initializeBlogs } from './reducers/blogReducer'
@@ -111,15 +111,15 @@ const App = () => {
       .catch((error) => console.log(error.message))
   }
 
-  const handleBlogRemove = (id) => {
-    blogService
-      .deleteOne(id)
-      .then(() => {
-        const blogsWithOneRemoved = blogs.filter(blog => blog.id !== id)
-        dispatch(initializeBlogs(blogsWithOneRemoved))
-      })
-      .catch((error) => console.log(error))
-  }
+  // const handleBlogRemove = (id) => {
+  //   blogService
+  //     .deleteOne(id)
+  //     .then(() => {
+  //       const blogsWithOneRemoved = blogs.filter(blog => blog.id !== id)
+  //       dispatch(initializeBlogs(blogsWithOneRemoved))
+  //     })
+  //     .catch((error) => console.log(error))
+  // }
 
   /** handlers and forms*/
 
@@ -151,23 +151,28 @@ const App = () => {
 
   // returns blog Content after user login
   const blogContent = () => {
+
+  const style = {
+    paddingTop: 10,
+    paddingLeft: 2,
+    border: 'solid',
+    borderWidth: 1,
+    marginBottom: 5
+  }
     return (
       <div>
         <h2>Blogs</h2>
         { blogForm() }
 
         {/* blog list */}
-        {
-          blogs
-            .sort((a, b) => (a.likes < b.likes) ? 1 : -1 )  
-            .map(blog =>
-              <Blog
-                key={blog.id}
-                blog={blog}
-                handleBlogUpdate={handleBlogUpdate}
-                handleBlogRemove={handleBlogRemove}
-              />
-          )
+
+        {blogs
+          .sort((a, b) => (a.likes < b.likes) ? 1 : -1 )
+          .map(blog => 
+            <div key={blog.id} style={style}>
+              <Link to={`/blogs/${blog.id}`} >{blog.title}</Link>
+            </div>
+            )
         }
       </div>
     )
@@ -178,13 +183,12 @@ const App = () => {
 
     return (
       <div>
+        {/* logout content */ }
         <div>
           {user.username} is logged-in
           <button onClick={handleLogout}>Log out</button>
         </div>
-        {
-            notification && <div className='notification'>{notification}</div>
-        }
+        
         <div>
             <Link style={style} to='/'>Home</Link>
             <Link style={style} to='/users'>Users</Link>
@@ -195,14 +199,9 @@ const App = () => {
 
   const User = () => {
     const id = useParams().id
-    const userToDisplay = users.find(user => {
-      console.log(user.id === id)
-      return user.id === id
-    })
+    const userToDisplay = users.find(user => user.id === id)
 
-    console.log(userToDisplay )
     if (!userToDisplay) {
-      console.log('returend')
       return null 
     }
     return (
@@ -222,7 +221,9 @@ const App = () => {
   // main
   return (
     <Router>
-        {/* logout content */ }
+      {
+          notification && <div className='notification'>{notification}</div>
+      }
         {
             user !== null
               ? (<div>
@@ -230,6 +231,12 @@ const App = () => {
                   <Switch>
                     <Route path='/users/:id'>
                       <User />
+                    </Route>
+                    <Route path='/blogs/:id'>
+                      <BlogContent 
+                        blogs={blogs}
+                        handleBlogUpdate={handleBlogUpdate}
+                      />
                     </Route>
                     <Route path='/users'>
                       <Users users={users} />

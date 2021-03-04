@@ -28,7 +28,7 @@ const BlogContent = ({blogs, handleBlogUpdate}) => {
            <div><strong>url: </strong> { blog.url} </div>
            <div><strong>author: </strong> { blog.author } </div>
            <div>
-               {blog.likes} <button onClick={handleLike}>like</button>
+              <strong>likes:</strong> {blog.likes} <button onClick={handleLike}>like</button>
            </div>
 
         </div>

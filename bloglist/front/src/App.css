@@ -44,3 +44,9 @@
   margin: 10px 0;
   padding: 3px;
 }
+
+
+#header {
+  background-color: lightgray;
+  display: flex;
+}

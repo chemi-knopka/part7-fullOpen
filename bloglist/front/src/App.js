@@ -180,19 +180,19 @@ const App = () => {
 
   const Header = () => {
     const style={padding: 5}
-
     return (
-      <div>
+      <div id="header">
         {/* logout content */ }
-        <div>
-          {user.username} is logged-in
-          <button onClick={handleLogout}>Log out</button>
-        </div>
         
         <div>
             <Link style={style} to='/'>Home</Link>
             <Link style={style} to='/users'>Users</Link>
         </div>
+        <div>
+          {user.username} is logged-in
+          <button onClick={handleLogout}>Log out</button>
+        </div>
+        
       </div>
     )
   }
@@ -204,6 +204,7 @@ const App = () => {
     if (!userToDisplay) {
       return null 
     }
+
     return (
       <div>
         <h2>{userToDisplay.username}</h2>
